@@ -7,8 +7,34 @@ const gruntOptions = {
   progress: process.stdout.isTTY,
   storeStatsTo: null,
   keepalive: (options) => {
-    // if watch enabled also default to keepalive true
-    return Array.isArray(options) ? options.some(option => option.watch) : Boolean(options.watch);
+    const isArray = Array.isArray(options);
+
+    // if watch enabled also default to keepalive true unless explicitly
+    // specified
+    if (isArray) {
+
+      // If any of the options have an explicitily set keepalive option we
+      // listen to that
+      const explicitKeepAlive = options.reduce((selected, option) => {
+        if (typeof selected === 'boolean') {
+          return selected;
+        }
+
+        if (typeof option.keepalive === 'boolean') {
+          return option.keepalive;
+        }
+      }, null);
+
+      return explicitKeepAlive !== null ? explicitKeepAlive : options.some(option => option.watch);
+    }
+    else {
+      if (typeof options.keepalive === 'boolean') {
+        return options.keepalive;
+      }
+
+      return Boolean(options.watch);
+    }
+
   },
   inline: false,
 };
